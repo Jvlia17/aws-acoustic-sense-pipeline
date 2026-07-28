@@ -2,28 +2,11 @@ __pycache__/
 .idea/
 .venv/
 *.pyc
-
 data/raw/
 data/processed/
-
-# Python
-__pycache__/
-*.pyc
-
-# Virtual environment
 venv/
 .env
-
-# Jupyter
-.ipynb_checkpoints/
-
-# Data files
-data/raw/
 *.csv
-
-# AWS
 .aws/
-
-# OS
 .DS_Store
 Thumbs.db
