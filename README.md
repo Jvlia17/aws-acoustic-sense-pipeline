@@ -149,7 +149,7 @@ The crawler created a metadata table in AWS Glue Data Catalog, enabling serverle
 
 Created catalog schema:
 
-![screenshot3.png](..%2F..%2Fathena%2Fscreenshot3.png)
+<img width="1562" height="478" alt="1" src="https://github.com/user-attachments/assets/03715c75-897b-4fc8-b9ab-6ee377c95b10" />
 
 ---
 
@@ -188,7 +188,7 @@ LIMIT 10;
 
 The query returned the measurements with the highest deviation from each sensor's normal signal pattern:
 
-![screenshot.png](..%2F..%2Fathena%2Fscreenshot.png)
+<img width="1453" height="705" alt="2" src="https://github.com/user-attachments/assets/3c30a3e1-dbc1-44ea-a1d4-21350382f785" />
 
 These results can be used as input for further anomaly investigation, reporting pipelines, or visualization of potential defect locations.
 
@@ -206,7 +206,7 @@ Each point represents a spatial sensor measurement:
 
 Potential anomalies are highlighted for further inspection.
 
-![screenshot2.png](..%2F..%2Fathena%2Fscreenshot2.png)
+<img width="902" height="565" alt="3" src="https://github.com/user-attachments/assets/3dc61c46-02ef-462a-8331-864616487f82" />
 
 ---
 
