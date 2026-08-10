@@ -11,9 +11,9 @@ AcousticSense Pipeline is an end-to-end data engineering project that simulates 
 
 The project demonstrates a complete cloud-based workflow for collecting, validating, transforming, storing, and analyzing sensor measurements using modern data engineering technologies.
 
-The pipeline generates synthetic ultrasonic sensor data, performs automated data quality validation, and stores raw measurements in an Amazon S3 data lake.
+The pipeline generates synthetic ultrasonic sensor data and stores raw measurements in an Amazon S3 data lake.
 
-AWS Glue Jobs using PySpark are responsible for scalable ETL processing, transforming raw CSV data into optimized Parquet datasets stored in the processed layer.
+AWS Glue Jobs using PySpark perform data quality validation and scalable ETL processing, transforming raw CSV data into optimized Parquet datasets stored in the processed layer.
 
 Processed data is catalogued using AWS Glue Data Catalog and analyzed using Amazon Athena. Statistical anomaly detection is applied to identify measurements that significantly differ from typical sensor behaviour, and results are visualized through an interactive 3D acoustic signal visualization.
 
@@ -61,7 +61,7 @@ AWS Glue Job (PySpark)
         |
         |
         ├── Data Validation
-        ├── Data Cleaning
+        ├── Data Transformation
         ├── Feature Engineering
         └── Parquet Conversion
         |
@@ -104,7 +104,9 @@ Generated attributes include:
 
 ## 2. Data Validation
 
-Automated validation checks ensure data reliability:
+AWS Glue Job performs automated data quality checks to ensure data reliability.
+
+Validation checks include:
 
 - missing value detection
 - amplitude range validation
@@ -118,6 +120,7 @@ Raw CSV files stored in Amazon S3 are processed using an AWS Glue Job built with
 
 The Glue Job performs:
 
+- data quality checks,
 - schema and data type conversion,
 - timestamp formatting,
 - chronological sorting,
@@ -126,6 +129,9 @@ The Glue Job performs:
 - conversion from CSV to optimized Parquet format.
 
 The transformed dataset is stored in the processed layer of the S3 data lake.
+AWS Glue job execution logs are monitored through Amazon CloudWatch, providing visibility into ETL runs, data quality checks, and job completion status.
+
+<img width="820" height="288" alt="logs" src="https://github.com/user-attachments/assets/54f3556d-1233-460a-b9f6-6b1438854f3f" />
 
 ---
 
@@ -211,7 +217,7 @@ Potential anomalies are highlighted for further inspection.
 ## Data Engineering
 
 - ETL pipeline design
-- Data validation
+- Data quality validation
 - Data transformation
 - Apache Parquet
 
@@ -219,14 +225,15 @@ Potential anomalies are highlighted for further inspection.
 
 - PySpark
 - AWS Glue Jobs
-- Apache Parquet
 
 ## AWS Cloud
 
 - Amazon S3
+- AWS Glue Jobs
 - AWS Glue Crawler
 - AWS Glue Data Catalog
 - Amazon Athena
+- Amazon CloudWatch
 - AWS CLI
 - boto3
 
@@ -264,7 +271,7 @@ python src/upload_to_s3.py
 
 3. Run AWS Glue Job
 
-AWS Glue Job transforms raw CSV data into Parquet format.
+AWS Glue Job performs data quality checks and transforms raw CSV data into Parquet format.
 
 
 4. Run Glue Crawler
