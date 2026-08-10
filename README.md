@@ -1,5 +1,5 @@
 # AcousticSense Pipeline
-**Python | AWS S3 | AWS Glue | Amazon Athena | Parquet | Plotly**
+**Python | PySpark | AWS S3 | AWS Glue Jobs | AWS Glue Data Catalog | Amazon Athena | Parquet | Plotly**
 
 End-to-End AWS Data Engineering Pipeline for Industrial Acoustic Sensor Analytics.
 
@@ -11,7 +11,9 @@ AcousticSense Pipeline is an end-to-end data engineering project that simulates 
 
 The project demonstrates a complete cloud-based workflow for collecting, validating, transforming, storing, and analyzing sensor measurements using modern data engineering technologies.
 
-The pipeline generates synthetic ultrasonic sensor data, performs automated data quality validation, transforms raw datasets into optimized Parquet format, and stores processed data in an Amazon S3 data lake.
+The pipeline generates synthetic ultrasonic sensor data, performs automated data quality validation, and stores raw measurements in an Amazon S3 data lake.
+
+AWS Glue Jobs using PySpark are responsible for scalable ETL processing, transforming raw CSV data into optimized Parquet datasets stored in the processed layer.
 
 Processed data is catalogued using AWS Glue Data Catalog and analyzed using Amazon Athena. Statistical anomaly detection is applied to identify measurements that significantly differ from typical sensor behaviour, and results are visualized through an interactive 3D acoustic signal visualization.
 
@@ -49,16 +51,22 @@ Synthetic Sensor Data
 Python Data Generation
         |
         v
-Data Validation
+Raw CSV Dataset
         |
         v
-Data Transformation
+Amazon S3 (raw/)
         |
         v
-Parquet Dataset
+AWS Glue Job (PySpark)
+        |
+        |
+        ├── Data Validation
+        ├── Data Cleaning
+        ├── Feature Engineering
+        └── Parquet Conversion
         |
         v
-Amazon S3 Data Lake
+Amazon S3 (processed/)
         |
         v
 AWS Glue Crawler
@@ -104,41 +112,21 @@ Automated validation checks ensure data reliability:
 - schema consistency checks
 
 
-## 3. Data Transformation
+## 3. ETL Processing with AWS Glue Job
 
-Raw CSV files are transformed into optimized Parquet format.
+Raw CSV files stored in Amazon S3 are processed using an AWS Glue Job built with PySpark.
 
-Transformations include:
+The Glue Job performs:
 
-- timestamp formatting
-- sorting measurements chronologically
-- feature generation
-- data type optimization
+- schema and data type conversion,
+- timestamp formatting,
+- chronological sorting,
+- feature engineering,
+- temperature rounding,
+- conversion from CSV to optimized Parquet format.
 
+The transformed dataset is stored in the processed layer of the S3 data lake.
 
-## 4. Cloud Storage and Data Catalog
-
-Processed datasets are stored in Amazon S3 using a data lake structure.
-
-AWS Glue Crawler automatically discovers the schema and creates metadata tables in AWS Glue Data Catalog.
-
-S3 structure:
-
-```
-acoustic-sense-pipeline/
-
-├── raw/
-
-│   └── sensor_measurements.csv
-
-├── processed/
-
-│   └── sensor_measurements.parquet
-
-└── athena-results/
-
-    └── query-results.csv
-```
 ---
 
 # 🗂️ AWS Glue Data Catalog
@@ -227,6 +215,11 @@ Potential anomalies are highlighted for further inspection.
 - Data transformation
 - Apache Parquet
 
+## Data Processing
+
+- PySpark
+- AWS Glue Jobs
+- Apache Parquet
 
 ## AWS Cloud
 
@@ -237,11 +230,6 @@ Potential anomalies are highlighted for further inspection.
 - AWS CLI
 - boto3
 
-
-## Data Processing
-
-- PyArrow
-
 ---
 
 # 📁 Project Structure
@@ -249,33 +237,13 @@ Potential anomalies are highlighted for further inspection.
 ```
 acoustic-sense-pipeline/
 
-├── data/
-
-│   ├── raw/
-
-│   └── processed/
-
-
 ├── src/
-
 │   ├── generate_data.py
-
-│   ├── validation.py
-
-│   ├── preprocessing.py
-
 │   ├── upload_to_s3.py
-
 │   └── visualize_3d.py
-
-
-├── reports/
-
-│   └── acoustic_anomaly_visualization.html
-
-
+├── glue_jobs/
+│   └── transform_sensor_data.py
 ├── requirements.txt
-
 └── README.md
 ```
 
@@ -283,29 +251,28 @@ acoustic-sense-pipeline/
 
 # 🚀 How to Run the Project
 
-1. Install dependencies
 ```
-pip install -r requirements.txt
-```
+1. Generate sensor data
 
-2. Generate sensor data
-```
 python src/generate_data.py
-```
 
-3. Validate data quality
-```
-python src/validation.py
-```
 
-4. Transform data
-```
-python src/preprocessing.py
-```
+2. Upload raw data to Amazon S3
 
-5. Upload data to AWS S3
-```
 python src/upload_to_s3.py
+
+
+3. Run AWS Glue Job
+
+AWS Glue Job transforms raw CSV data into Parquet format.
+
+
+4. Run Glue Crawler
+
+Update metadata catalog.
+
+
+5. Query processed data using Amazon Athena.
 ```
 
 ---
