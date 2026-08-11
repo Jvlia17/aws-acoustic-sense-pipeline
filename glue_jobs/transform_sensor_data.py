@@ -3,6 +3,7 @@ import sys
 from pyspark.context import SparkContext
 from awsglue.context import GlueContext
 from awsglue.job import Job
+from awsglue.utils import getResolvedOptions
 
 from pyspark.sql import functions as F
 
@@ -14,14 +15,20 @@ glueContext = GlueContext(sc)
 spark = glueContext.spark_session
 
 job = Job(glueContext)
-job.init("acoustic-sense-transform-job", {})
+
+args = getResolvedOptions(
+    sys.argv,
+    ["JOB_NAME", "INPUT_PATH"]
+)
+
+job.init(args["JOB_NAME"], args)
 
 
-# S3 paths
+# S3 input path provided by Lambda
 
-INPUT_PATH = "s3://acoustic-sense-pipeline/raw/sensor_measurements.csv"
+INPUT_PATH = args["INPUT_PATH"]
 
-OUTPUT_PATH = "s3://acoustic-sense-pipeline/processed/"
+print(f"Input path: {INPUT_PATH}")
 
 
 # -----------------------------------
@@ -43,42 +50,19 @@ print(f"Loaded rows: {df.count()}")
 
 df = (
     df
-    .withColumn(
-        "timestamp",
-        F.to_timestamp("timestamp")
-    )
-    .withColumn(
-        "x",
-        F.col("x").cast("double")
-    )
-    .withColumn(
-        "y",
-        F.col("y").cast("double")
-    )
-    .withColumn(
-        "z",
-        F.col("z").cast("double")
-    )
-    .withColumn(
-        "frequency",
-        F.col("frequency").cast("double")
-    )
-    .withColumn(
-        "temperature",
-        F.col("temperature").cast("double")
-    )
-    .withColumn(
-        "amplitude",
-        F.col("amplitude").cast("double")
-    )
+    .withColumn("timestamp", F.to_timestamp("timestamp"))
+    .withColumn("x", F.col("x").cast("double"))
+    .withColumn("y", F.col("y").cast("double"))
+    .withColumn("z", F.col("z").cast("double"))
+    .withColumn("frequency", F.col("frequency").cast("double"))
+    .withColumn("temperature", F.col("temperature").cast("double"))
+    .withColumn("amplitude", F.col("amplitude").cast("double"))
 )
 
 
 # -----------------------------------
 # 3. Data quality checks
 # -----------------------------------
-
-# Missing values
 
 missing_values = (
     df
@@ -97,13 +81,9 @@ if missing_values > 0:
     )
 
 
-# Invalid amplitude
-
 invalid_amplitude = (
     df
-    .filter(
-        F.col("amplitude") < 0
-    )
+    .filter(F.col("amplitude") < 0)
     .count()
 )
 
@@ -112,8 +92,6 @@ if invalid_amplitude > 0:
         f"Data quality check failed: {invalid_amplitude} rows have invalid amplitude values"
     )
 
-
-# Invalid coordinates
 
 invalid_coordinates = (
     df
@@ -130,7 +108,6 @@ if invalid_coordinates > 0:
         f"Data quality check failed: {invalid_coordinates} rows have invalid coordinates"
     )
 
-
 print("Data quality checks passed successfully")
 
 
@@ -138,20 +115,12 @@ print("Data quality checks passed successfully")
 # 4. Transformations
 # -----------------------------------
 
-# Sort by timestamp
-
 df = df.orderBy("timestamp")
-
-
-# Feature engineering
 
 df = df.withColumn(
     "signal_strength",
     F.col("amplitude") * F.col("frequency")
 )
-
-
-# Round temperature
 
 df = df.withColumn(
     "temperature",
@@ -163,14 +132,21 @@ df = df.withColumn(
 # 5. Write processed data
 # -----------------------------------
 
+file_name = INPUT_PATH.split("/")[-1]
+file_base_name = file_name.rsplit(".", 1)[0]
+
+OUTPUT_PATH = (
+    f"s3://acoustic-sense-pipeline/processed/{file_base_name}/"
+)
+
+print(f"Output path: {OUTPUT_PATH}")
+
 (
     df.write
     .mode("overwrite")
     .parquet(OUTPUT_PATH)
 )
 
-
 print("ETL job completed successfully")
-
 
 job.commit()
