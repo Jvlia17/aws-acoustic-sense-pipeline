@@ -1,5 +1,5 @@
 # AcousticSense Pipeline
-**Python | PySpark | AWS S3 | AWS Glue Jobs | AWS Glue Data Catalog | Amazon Athena | Parquet | Plotly**
+**Python | PySpark | AWS Lambda | Amazon S3 | AWS Glue Jobs | AWS Glue Data Catalog | Amazon Athena | Parquet | Plotly**
 
 End-to-End AWS Data Engineering Pipeline for Industrial Acoustic Sensor Analytics.
 
@@ -7,36 +7,17 @@ End-to-End AWS Data Engineering Pipeline for Industrial Acoustic Sensor Analytic
 
 # 🔷 Project Overview
 
-AcousticSense Pipeline is an end-to-end data engineering project that simulates the processing of industrial acoustic sensor data.
+AcousticSense Pipeline is an event-driven AWS data engineering project for processing synthetic industrial acoustic sensor data.
 
-The project demonstrates a complete cloud-based workflow for collecting, validating, transforming, storing, and analyzing sensor measurements using modern data engineering technologies.
+Python generates sensor measurements that are uploaded to Amazon S3. New files trigger AWS Lambda, which starts an AWS Glue PySpark job with the uploaded file path. Glue validates and transforms the data, then stores optimized Parquet datasets in S3.
 
-The pipeline generates synthetic ultrasonic sensor data and stores raw measurements in an Amazon S3 data lake.
-
-AWS Glue Jobs using PySpark perform data quality validation and scalable ETL processing, transforming raw CSV data into optimized Parquet datasets stored in the processed layer.
-
-Processed data is catalogued using AWS Glue Data Catalog and analyzed using Amazon Athena. Statistical anomaly detection is applied to identify measurements that significantly differ from typical sensor behaviour, and results are visualized through an interactive 3D acoustic signal visualization.
-
-The project is inspired by industrial inspection systems where large-scale sensor data is processed to identify potential structural anomalies and generate actionable insights.
+Processed data is catalogued with AWS Glue Data Catalog and analyzed using Amazon Athena for statistical anomaly detection. Results are visualized as an interactive 3D representation of sensor measurements.
 
 ---
 
 # 🎯 Business Problem
 
-Industrial inspection systems generate large volumes of sensor data that must be processed reliably before any analysis or machine learning can be performed.
-
-Raw sensor measurements may contain:
-- missing values,
-- invalid measurements,
-- inconsistent formats,
-- abnormal signal readings.
-
-The goal of this project is to build a reliable data pipeline that ensures:
-
-- data quality before downstream processing,
-- efficient storage of processed datasets,
-- scalable cloud-based data management,
-- preparation of sensor data for anomaly detection and visualization.
+Industrial sensor data requires reliable validation and transformation before analysis. This project builds an automated pipeline that ensures data quality, efficient storage, and prepares sensor measurements for anomaly detection.
 
 ---
 
@@ -56,6 +37,11 @@ Raw CSV Dataset
         v
 Amazon S3 (raw/)
         |
+        | ObjectCreated Event
+        v
+AWS Lambda
+        |
+        | Start Glue Job
         v
 AWS Glue Job (PySpark)
         |
@@ -90,46 +76,24 @@ Anomaly Detection
 
 ## 1. Data Generation
 
-Synthetic acoustic sensor measurements are generated using Python.
+Python generates synthetic acoustic sensor measurements containing spatial, temporal, signal, and environmental attributes.
 
-Generated attributes include:
-
-- sensor_id
-- timestamp
-- x, y, z coordinates
-- frequency
-- temperature
-- signal amplitude
+The generated CSV dataset is uploaded to the raw/ prefix of the Amazon S3 bucket.
 
 
-## 2. Data Validation
+## 2. Event-Driven Trigger
 
-AWS Glue Job performs automated data quality checks to ensure data reliability.
-
-Validation checks include:
-
-- missing value detection
-- amplitude range validation
-- coordinate validation
-- schema consistency checks
-
+When a new CSV object is uploaded to the S3 `raw/` prefix, an `ObjectCreated` event triggers AWS Lambda. The function starts the Glue PySpark job and dynamically passes the uploaded file path through the `INPUT_PATH` parameter.
 
 ## 3. ETL Processing with AWS Glue Job
 
-Raw CSV files stored in Amazon S3 are processed using an AWS Glue Job built with PySpark.
+The AWS Glue Job uses PySpark to validate and transform the input data, perform feature engineering, and convert CSV files into optimized Parquet datasets.
 
-The Glue Job performs:
+Data quality checks cover missing values, invalid amplitudes, and invalid coordinates. If validation fails, the pipeline stops before invalid data reaches the processed layer.
 
-- data quality checks,
-- schema and data type conversion,
-- timestamp formatting,
-- chronological sorting,
-- feature engineering,
-- temperature rounding,
-- conversion from CSV to optimized Parquet format.
+The transformed dataset is stored as optimized Parquet files in the S3 `processed/` layer.
 
-The transformed dataset is stored in the processed layer of the S3 data lake.
-AWS Glue job execution logs are monitored through Amazon CloudWatch, providing visibility into ETL runs, data quality checks, and job completion status.
+AWS Glue Job execution logs are monitored through Amazon CloudWatch, providing visibility into ETL runs, data quality checks, and job completion status.
 
 <img width="820" height="288" alt="logs" src="https://github.com/user-attachments/assets/54f3556d-1233-460a-b9f6-6b1438854f3f" />
 
@@ -149,11 +113,10 @@ Created catalog schema:
 
 # 📊 Athena Analytics
 
-Amazon Athena was used to perform SQL-based analysis directly on the processed Parquet data stored in Amazon S3.
+Amazon Athena is used to analyze the processed Parquet data stored in Amazon S3. 
 
-The query ranks potentially abnormal acoustic measurements by calculating a sensor-specific statistical baseline.
+Sensor-specific z-scores are calculated to identify measurements that significantly deviate from typical signal behaviour.
 
-A higher z-score indicates that the measurement significantly deviates from the sensor's typical behaviour, helping identify potential areas requiring further investigation.
 
 ```sql
 WITH sensor_statistics AS (
@@ -190,15 +153,7 @@ These results can be used as input for further anomaly investigation, reporting 
 
 ## 🌐 3D Acoustic Anomaly Visualization
 
-The visualization was created using Python and Plotly.
-
-Each point represents a spatial sensor measurement:
-
-- X/Y/Z coordinates represent physical location
-- Point size represents acoustic amplitude
-- Color represents anomaly classification based on statistical deviation
-
-Potential anomalies are highlighted for further inspection.
+An interactive 3D Plotly visualization shows sensor measurements by spatial location, amplitude, and anomaly classification.
 
 <img width="902" height="565" alt="3" src="https://github.com/user-attachments/assets/3dc61c46-02ef-462a-8331-864616487f82" />
 
@@ -212,30 +167,31 @@ Potential anomalies are highlighted for further inspection.
 - Pandas
 - NumPy
 - Plotly
-
+- boto3
 
 ## Data Engineering
 
 - ETL pipeline design
+- Event-driven architecture
 - Data quality validation
 - Data transformation
-- Apache Parquet
 
 ## Data Processing
 
 - PySpark
-- AWS Glue Jobs
+- - Apache Parquet
 
 ## AWS Cloud
 
 - Amazon S3
+- S3 Event Notifications
+- AWS Lambda
 - AWS Glue Jobs
 - AWS Glue Crawler
 - AWS Glue Data Catalog
 - Amazon Athena
 - Amazon CloudWatch
 - AWS CLI
-- boto3
 
 ---
 
@@ -248,8 +204,13 @@ acoustic-sense-pipeline/
 │   ├── generate_data.py
 │   ├── upload_to_s3.py
 │   └── visualize_3d.py
+│
 ├── glue_jobs/
 │   └── transform_sensor_data.py
+│
+├── lambda/
+│   └── s3_trigger.py
+│
 ├── requirements.txt
 └── README.md
 ```
@@ -260,26 +221,22 @@ acoustic-sense-pipeline/
 
 ```
 1. Generate sensor data
-
 python src/generate_data.py
 
-
 2. Upload raw data to Amazon S3
-
 python src/upload_to_s3.py
+The generated CSV file is uploaded to the S3 raw/ prefix.
 
-
-3. Run AWS Glue Job
-
-AWS Glue Job performs data quality checks and transforms raw CSV data into Parquet format.
-
+3. Event-driven ETL processing
+The S3 upload automatically triggers the Lambda function.
+Lambda starts the AWS Glue Job and passes the uploaded object's S3 path as the INPUT_PATH parameter.
+The Glue Job validates and transforms the data and writes the resulting Parquet dataset to the processed/ prefix.
 
 4. Run Glue Crawler
+Update the AWS Glue Data Catalog metadata after new processed datasets are created.
 
-Update metadata catalog.
-
-
-5. Query processed data using Amazon Athena.
+5. Query processed data using Amazon Athena
+Use Athena to perform SQL analysis and identify potential acoustic anomalies.
 ```
 
 ---
@@ -288,8 +245,9 @@ Update metadata catalog.
 
 Potential future extensions:
 
-- Automated pipeline orchestration using AWS Step Functions or Apache Airflow
-- Real-time sensor ingestion using streaming services
-- Machine learning-based anomaly detection models
-- Integration with client reporting dashboards
-- Processing of real ultrasonic waveform data
+- adding Amazon SQS between S3 and Lambda for event buffering and decoupling,
+- orchestration using AWS Step Functions or Apache Airflow for more complex workflows,
+- real-time sensor ingestion using streaming services,
+- machine learning-based anomaly detection models,
+- integration with client reporting dashboards,
+- processing of real ultrasonic waveform data.
