@@ -5,7 +5,7 @@ End-to-End AWS Data Engineering Pipeline for Industrial Acoustic Sensor Analytic
 
 ---
 
-# 🔷 Project Overview
+# Project Overview
 
 AcousticSense Pipeline is an event-driven AWS data engineering project for processing synthetic industrial acoustic sensor data.
 
@@ -15,13 +15,13 @@ Processed data is catalogued with AWS Glue Data Catalog and analyzed using Amazo
 
 ---
 
-# 🎯 Business Problem
+# Business Problem
 
 Industrial sensor data requires reliable validation and transformation before analysis. This project builds an automated pipeline that ensures data quality, efficient storage, and prepares sensor measurements for anomaly detection.
 
 ---
 
-# 🏗️ Data Pipeline Architecture
+# Data Pipeline Architecture
 
 The pipeline follows a cloud-based ETL architecture:
 
@@ -72,7 +72,7 @@ Anomaly Detection
 
 ---
 
-# 🔄 Pipeline Workflow
+# Pipeline Workflow
 
 ## 1. Data Generation
 
@@ -99,7 +99,7 @@ AWS Glue Job execution logs are monitored through Amazon CloudWatch, providing v
 
 ---
 
-# 🗂️ AWS Glue Data Catalog
+# AWS Glue Data Catalog
 
 AWS Glue Crawler was used to automatically discover the schema of processed Parquet files stored in Amazon S3.
 
@@ -111,7 +111,7 @@ Created catalog schema:
 
 ---
 
-# 📊 Athena Analytics
+# Athena Analytics
 
 Amazon Athena is used to analyze the processed Parquet data stored in Amazon S3. 
 
@@ -151,7 +151,7 @@ These results can be used as input for further anomaly investigation, reporting 
 
 ---
 
-## 🌐 3D Acoustic Anomaly Visualization
+## 3D Acoustic Anomaly Visualization
 
 An interactive 3D Plotly visualization shows sensor measurements by spatial location, amplitude, and anomaly classification.
 
@@ -159,7 +159,7 @@ An interactive 3D Plotly visualization shows sensor measurements by spatial loca
 
 ---
 
-# 🧪 Technologies Used
+# Technologies Used
 
 ## Programming
 
@@ -195,7 +195,7 @@ An interactive 3D Plotly visualization shows sensor measurements by spatial loca
 
 ---
 
-# 📁 Project Structure
+# Project Structure
 
 ```
 acoustic-sense-pipeline/
@@ -217,7 +217,7 @@ acoustic-sense-pipeline/
 
 ---
 
-# 🚀 How to Run the Project
+# How to Run the Project
 
 ```
 1. Generate sensor data
@@ -241,7 +241,7 @@ Use Athena to perform SQL analysis and identify potential acoustic anomalies.
 
 ---
 
-# 🔮 Future Improvements
+# Future Improvements
 
 Potential future extensions:
 
